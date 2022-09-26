@@ -1,0 +1,12 @@
+import analysis
+import matplotlib.pyplot as plt
+
+data = analysis.x2  # загрузка данных для обучения
+
+data.hist(bins=10, figsize = (10,10))
+plt.show()
+
+from pandas.plotting import scatter_matrix
+features = ['class', 'Polyuria', 'Polydipsia']
+scatter_matrix(data[features])
+plt.show()
