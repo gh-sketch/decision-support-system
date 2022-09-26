@@ -1,0 +1,39 @@
+import analysis
+from sklearn.metrics import confusion_matrix
+from sklearn.metrics import accuracy_score
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+x_train = analysis.x_train
+y_train = analysis.y_train
+x_val = analysis.x_val
+y_val = analysis.y_val
+x_test = analysis.x_test
+y_test = analysis.y_test
+lr = analysis.lr
+train_preds = lr.predict(x_train)
+train_probs = lr.predict_proba(x_train)
+print(accuracy_score(y_train, train_preds))
+print(confusion_matrix(y_train, train_preds, normalize='true'))
+
+
+def predict_and_plot(inputs, targets, name=''):
+    preds = lr.predict(inputs)
+
+    accuracy = accuracy_score(targets, preds)
+    print("Accuracy: {:.2f}%".format(accuracy * 100))
+
+    cf = confusion_matrix(targets, preds, normalize='true')
+    plt.figure()
+    sns.heatmap(cf, annot=True)
+    plt.xlabel('Прогноз')
+    plt.ylabel('Реальные значения')
+    plt.title('Матрица ошибок {}'.format(name))
+    plt.show()
+
+    return preds
+
+
+train_preds = predict_and_plot(x_train, y_train, 'обучения')
+val_preds = predict_and_plot(x_val, y_val, 'валидации')
+test_preds = predict_and_plot(x_test, y_test, 'тестирования')
