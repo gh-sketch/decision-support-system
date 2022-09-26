@@ -1,0 +1,429 @@
+import sys
+from PyQt5 import QtWidgets
+from PyQt5.QtCore import QSize
+from PyQt5.uic import loadUi
+from PyQt5.QtWidgets import QDialog, QApplication, QStackedWidget, QMessageBox, QMainWindow, QTableWidgetItem
+import pymysql.cursors
+import pandas as pd
+import analysis
+
+conn = pymysql.connect(host='localhost',
+                       user='root',
+                       password='admin',
+                       db='diabetes')
+
+
+class WelcomeScreen(QDialog):
+    def __init__(self):
+        super(WelcomeScreen, self).__init__()
+        loadUi("welcome.ui", self)
+        self.login.clicked.connect(self.gotologin)
+        self.reg.clicked.connect(self.gotoreg)
+
+    def gotologin(self):
+        cursor = conn.cursor()
+        cursor.execute(
+            "SET FOREIGN_KEY_CHECKS = 0;")
+        cursor.execute(
+            "update patients set ID_log = 0;")
+        cursor.execute(
+            "SET FOREIGN_KEY_CHECKS=1;")
+        conn.commit()
+        login = LoginScreen()
+        widget.addWidget(login)
+        widget.setCurrentIndex(widget.currentIndex() + 1)
+
+    def gotoreg(self):
+        create = CreateAccScreen()
+        widget.addWidget(create)
+        widget.setCurrentIndex(widget.currentIndex() + 1)
+
+
+class LoginScreen(QDialog):
+    def __init__(self):
+        super(LoginScreen, self).__init__()
+        loadUi("login.ui", self)
+        self.passwordline.setEchoMode(QtWidgets.QLineEdit.Password)
+        self.login.clicked.connect(self.loginfunction)
+        self.pushButton.clicked.connect(self.back)
+
+    def back(self):
+        widget.addWidget(WelcomeScreen())
+        widget.setCurrentIndex(widget.currentIndex() + 1)
+
+    def loginfunction(self):
+        user = self.usernameline.text()
+        password = self.passwordline.text()
+
+        if len(user) == 0 or len(password) == 0:
+            self.error.setText("Заполните все поля")
+        else:
+            cursor = conn.cursor()
+            cursor.execute("SELECT * FROM users WHERE username = '" + user + "' and password ='" + password + "';")
+            result_pass = cursor.fetchone()
+            if result_pass == None:
+                self.error.setText("Неизвестный логин или пароль")
+            else:
+                cursor = conn.cursor()
+                cursor.execute(
+                    "update patients inner join users set patients.ID_log = users.ID_log where"
+                    " patients.username = '" + user + "' and users.username = '" + user + "';")
+                conn.commit()
+                widget.addWidget(MainScreen())
+                widget.setCurrentIndex(widget.currentIndex() + 1)
+                self.error.setText("")
+
+
+class CreateAccScreen(QDialog):
+    def __init__(self):
+        super(CreateAccScreen, self).__init__()
+        loadUi("reg.ui", self)
+        self.passwordreg.setEchoMode(QtWidgets.QLineEdit.Password)
+        self.repeatpassword.setEchoMode(QtWidgets.QLineEdit.Password)
+        self.reg.clicked.connect(self.signupfunction)
+        self.pushButton_2.clicked.connect(self.back)
+
+    def back(self):
+        widget.addWidget(WelcomeScreen())
+        widget.setCurrentIndex(widget.currentIndex() + 1)
+
+    def signupfunction(self):
+        name = self.namereg.text()
+        fam = self.famreg.text()
+        user = self.loginreg.text()
+        password = self.passwordreg.text()
+        repeatpassword = self.repeatpassword.text()
+
+        cursor = conn.cursor()
+        cursor.execute("select username from users where username ='" + user + "';")
+        proverka = cursor.fetchone()
+
+        if len(user) == 0 or len(fam) == 0 or len(name) == 0 or len(password) == 0 or len(repeatpassword) == 0:
+            self.error.setText("Нужно заполнить все поля")
+
+        elif proverka is not None:
+            self.error.setText("Такой логин уже зарегистрирован")
+
+        elif password != repeatpassword:
+            self.error.setText("Пароли не совпадают")
+
+        else:
+            cursor = conn.cursor()
+            cursor.execute(
+                "INSERT INTO users  (username, name, fam, password) VALUES ('" + user + "','" + name + "','"
+                + fam + "','" + password + "');")
+            conn.commit()
+
+            QMessageBox.about(self, "Регистрация", "Теперь вы зарегистрированы!")
+            widget.addWidget(WelcomeScreen())
+            widget.setCurrentIndex(widget.currentIndex() + 1)
+
+
+class MainScreen(QMainWindow):
+    def __init__(self):
+        super(MainScreen, self).__init__()
+        loadUi("main.ui", self)
+        self.reload.clicked.connect(self.loaddata)
+        self.test_button.clicked.connect(self.test)
+        self.new_patient_button.clicked.connect(self.new_patient)
+        self.welcomeButton.clicked.connect(self.backtowelcome)
+        self.more_button.clicked.connect(self.more)
+
+    def new_patient(self):
+        widget.addWidget(NewPScreen())
+        widget.setCurrentIndex(widget.currentIndex() + 1)
+
+    def test(self):
+        widget.addWidget(Test())
+        widget.setCurrentIndex(widget.currentIndex() + 1)
+
+    def backtowelcome(self):
+        widget.addWidget(WelcomeScreen())
+        widget.setCurrentIndex(widget.currentIndex() + 1)
+
+    def loaddata(self):
+        cursor = conn.cursor()
+        cursor.execute(
+            "SELECT ID_patient, concat(fam_patient,' ',left(name_patient,1),'. ',left(otch_patient,1),'.'),"
+            " number_p, date_p, diagnoz "
+            "FROM patients inner join users where users.ID_log = patients.ID_log;")
+        res = cursor.fetchall()
+        conn.commit()
+        self.tableWidget.setRowCount(0)
+        for row_number, row_data in enumerate(res):
+            self.tableWidget.insertRow(row_number)
+            for column_number, data in enumerate(row_data):
+                self.tableWidget.setItem(row_number, column_number, QTableWidgetItem(str(data)))
+
+    def more(self):
+        patient_id = self.patient_id_line.text()
+        cursor = conn.cursor()
+        cursor.execute("select concat(fam_patient,' ',left(name_patient,1),'. ',left(otch_patient,1),'.')"
+                       " from patients where ID_patient = '" + patient_id + "'")
+        fio = cursor.fetchone()
+        cursor.execute("select gender from patients where ID_patient = '" + patient_id + "'")
+        gender = cursor.fetchone()
+        cursor.execute("select TIMESTAMPDIFF(YEAR, date_p, curdate()) AS years from patients where ID_patient = '"
+                       + patient_id + "'")
+        age = cursor.fetchone()
+        cursor.execute("select number_p from patients where ID_patient = '" + patient_id + "'")
+        number = cursor.fetchone()
+        cursor.execute("select poliyriya from patients where ID_patient = '" + patient_id + "'")
+        poliyriya = cursor.fetchone()
+        cursor.execute("select polydipsia from patients where ID_patient = '" + patient_id + "'")
+        polydipsia = cursor.fetchone()
+        cursor.execute("select swl from patients where ID_patient = '" + patient_id + "'")
+        swl = cursor.fetchone()
+        cursor.execute("select weakness from patients where ID_patient = '" + patient_id + "'")
+        weakness = cursor.fetchone()
+        cursor.execute("select p_app from patients where ID_patient = '" + patient_id + "'")
+        polyphagia = cursor.fetchone()
+        cursor.execute("select pomutn from patients where ID_patient = '" + patient_id + "'")
+        vb = cursor.fetchone()
+        cursor.execute("select zud from patients where ID_patient = '" + patient_id + "'")
+        itching = cursor.fetchone()
+        cursor.execute("select razdr from patients where ID_patient = '" + patient_id + "'")
+        irritab = cursor.fetchone()
+        cursor.execute("select otsr_lech from patients where ID_patient = '" + patient_id + "'")
+        dh = cursor.fetchone()
+        cursor.execute("select parez from patients where ID_patient = '" + patient_id + "'")
+        pp = cursor.fetchone()
+        cursor.execute("select jest_m from patients where ID_patient = '" + patient_id + "'")
+        ms = cursor.fetchone()
+        cursor.execute("select alopecia from patients where ID_patient = '" + patient_id + "'")
+        alopecia = cursor.fetchone()
+        cursor.execute("select ojirenie from patients where ID_patient = '" + patient_id + "'")
+        obesity = cursor.fetchone()
+        cursor.execute("select prediction from patients where ID_patient = '" + patient_id + "'")
+        pred = cursor.fetchone()
+        cursor.execute("select diagnoz from patients where ID_patient = '" + patient_id + "'")
+        diagnoz = cursor.fetchone()
+        conn.commit()
+        msgBox = QMessageBox()
+        msgBox.setMinimumSize(QSize(300, 200))
+        msgBox.setIcon(QMessageBox.Information)
+        msgBox.setText("ФИО пациента: " + str(fio[0]) + " \nПол: " + str(gender[0]) +
+                       "\nВозраст: " + str(age[0]) + " \nНомер телефона: " + str(number[0]) +
+                       "\nПолиурия: " + str(poliyriya[0]) + "\nПолидипсия: " + str(polydipsia[0]) +
+                       "\nВнезапная потеря веса: " + str(swl[0]) + "\nCлабост: " + str(weakness[0]) +
+                       "\nПовышенный аппетит: " + str(polyphagia[0]) + "\nПомутнения в глазах: " + str(vb[0]) +
+                       "\nЗуд: " + str(itching[0]) + "\nРаздражительность: " + str(irritab[0]) +
+                       "\nОтсроченное лечение: " + str(dh[0]) + "\nПарез: " + str(pp[0]) +
+                       "\nЖесткость мышц: " + str(ms[0]) + "\nАлопеция: " + str(alopecia[0]) +
+                       "\nОжирение: " + str(obesity[0]) + "\nВероятный диагноз: " + str(pred[0]) +
+                       "\nДиагноз: " + str(diagnoz[0]) + ".")
+
+        msgBox.setWindowTitle('Подробная информация')
+        msgBox.exec_()
+
+
+
+class NewPScreen(QMainWindow):
+    def __init__(self):
+        super(NewPScreen, self).__init__()
+        loadUi("new_patient.ui", self)
+        self.back_button.clicked.connect(self.back)
+        self.save_button.clicked.connect(self.save)
+
+    def back(self):
+        widget.addWidget(MainScreen())
+        widget.setCurrentIndex(widget.currentIndex() + 1)
+
+    def save(self):
+        fam = self.fam.text()
+        name = self.name.text()
+        otch = self.otch.text()
+        gender = self.gender.currentText()
+        date = self.date.dateTime().toString("yyyy-MM-dd")
+        number = self.number.text()
+        username = self.login.text()
+        cursor = conn.cursor()
+        cursor.execute(
+            "INSERT INTO patients (fam_patient, name_patient, otch_patient, gender, date_p, number_p, "
+            "username) VALUES ('" + fam + "','" + name + "','" + otch + "','" + gender + "','" + date + "','" + number +
+            "','" + username + "');")
+        cursor.execute(
+            "SET SQL_SAFE_UPDATES = 0;")
+        cursor.execute(
+            "update patients inner join users set patients.ID_log = users.ID_log where"
+            " patients.username = '" + username + "' and users.username = '" + username + "';")
+        conn.commit()
+
+        QMessageBox.about(self, "Добавление нового пациента", "Пациент добавлен!")
+        widget.addWidget(MainScreen())
+        widget.setCurrentIndex(widget.currentIndex() + 1)
+
+
+class Test(QMainWindow):
+    def __init__(self):
+        super(Test, self).__init__()
+        loadUi("diagnoz.ui", self)
+        self.back_button.clicked.connect(self.back)
+        self.send_button.clicked.connect(self.send)
+
+    def back(self):
+        widget.addWidget(MainScreen())
+        widget.setCurrentIndex(widget.currentIndex() + 1)
+
+    def send(self):
+        patient_id = self.patient_id.text()
+        cursor = conn.cursor()
+
+        cursor.execute(
+            "SELECT TIMESTAMPDIFF(YEAR, date_p, curdate()) AS years from patients where ID_patient = '"
+            + patient_id + "'")
+        age = cursor.fetchone()
+
+        if self.poliyriya.isChecked():
+            cursor.execute("update patients set poliyriya = '1' where ID_patient = '" + patient_id + "'")
+        else:
+            cursor.execute("update patients set poliyriya = '0' where ID_patient = '" + patient_id + "'")
+        cursor.execute ("select poliyriya from patients where ID_patient = '" + patient_id + "'")
+        polyuria = cursor.fetchone()
+
+        if self.polydipsiya.isChecked():
+            cursor.execute("update patients set `polydipsia` = '1' where ID_patient = '" + patient_id + "'")
+        else:
+            cursor.execute("update patients set `polydipsia` = '0' where ID_patient = '" + patient_id + "'")
+        cursor.execute("select polydipsia from patients where ID_patient = '" + patient_id + "'")
+        polydipsia = cursor.fetchone()
+
+        if self.swl.isChecked():
+            cursor.execute("update patients set `swl` = '1' where ID_patient = '" + patient_id + "'")
+        else:
+            cursor.execute("update patients set `swl` = '0' where ID_patient = '" + patient_id + "'")
+        cursor.execute("select swl from patients where ID_patient = '" + patient_id + "'")
+        swl = cursor.fetchone()
+
+        if self.weakness.isChecked():
+            cursor.execute("update patients set weakness = '1' where ID_patient = '" + patient_id + "'")
+        else:
+            cursor.execute("update patients set weakness = '0' where ID_patient = '" + patient_id + "'")
+        cursor.execute("select weakness from patients where ID_patient = '" + patient_id + "'")
+        weakness = cursor.fetchone()
+
+        if self.p_ap.isChecked():
+            cursor.execute("update patients set `p_app` = '1' where ID_patient = '" + patient_id + "'")
+        else:
+            cursor.execute("update patients set `p_app` = '0' where ID_patient = '" + patient_id + "'")
+        cursor.execute("select p_app from patients where ID_patient = '" + patient_id + "'")
+        polyphagia = cursor.fetchone()
+
+        if self.pvgl.isChecked():
+            cursor.execute("update patients set `pomutn` = '1' where ID_patient = '" + patient_id + "'")
+        else:
+            cursor.execute("update patients set `pomutn` = '0' where ID_patient = '" + patient_id + "'")
+        cursor.execute("select pomutn from patients where ID_patient = '" + patient_id + "'")
+        vb = cursor.fetchone()
+
+        if self.zud.isChecked():
+            cursor.execute("update patients set zud = '1' where ID_patient = '" + patient_id + "'")
+        else:
+            cursor.execute("update patients set zud = '0' where ID_patient = '" + patient_id + "'")
+        cursor.execute("select zud from patients where ID_patient = '" + patient_id + "'")
+        itching = cursor.fetchone()
+
+        if self.irritab.isChecked():
+            cursor.execute("update patients set `razdr` = '1' where ID_patient = '" + patient_id + "'")
+        else:
+            cursor.execute("update patients set `razdr` = '0' where ID_patient = '" + patient_id + "'")
+        cursor.execute("select razdr from patients where ID_patient = '" + patient_id + "'")
+        irritab = cursor.fetchone()
+
+        if self.del_h.isChecked():
+            cursor.execute("update patients set `otsr_lech` = '1' where ID_patient = '" + patient_id + "'")
+        else:
+            cursor.execute("update patients set `otsr_lech` = '0' where ID_patient = '" + patient_id + "'")
+        cursor.execute("select otsr_lech from patients where ID_patient = '" + patient_id + "'")
+        dh = cursor.fetchone()
+
+        if self.parez.isChecked():
+            cursor.execute("update patients set `parez` = '1' where ID_patient = '" + patient_id + "'")
+        else:
+            cursor.execute("update patients set `parez` = '0' where ID_patient = '" + patient_id + "'")
+        cursor.execute("select parez from patients where ID_patient = '" + patient_id + "'")
+        pp = cursor.fetchone()
+
+        if self.m_weakness.isChecked():
+            cursor.execute("update patients set `jest_m` = '1' where ID_patient = '" + patient_id + "'")
+        else:
+            cursor.execute("update patients set `jest_m` = '0' where ID_patient = '" + patient_id + "'")
+        cursor.execute("select jest_m from patients where ID_patient = '" + patient_id + "'")
+        ms = cursor.fetchone()
+
+        if self.alopecia.isChecked():
+            cursor.execute("update patients set `alopecia` = '1' where ID_patient = '" + patient_id + "'")
+        else:
+            cursor.execute("update patients set `alopecia` = '0' where ID_patient = '" + patient_id + "'")
+        cursor.execute("select alopecia from patients where ID_patient = '" + patient_id + "'")
+        alopecia = cursor.fetchone()
+
+        if self.ojirenie.isChecked():
+            cursor.execute("update patients set `ojirenie` = '1' where ID_patient = '" + patient_id + "'")
+        else:
+            cursor.execute("update patients set `ojirenie` = '0' where ID_patient = '" + patient_id + "'")
+        cursor.execute("select ojirenie from patients where ID_patient = '" + patient_id + "'")
+        obesity = cursor.fetchone()
+        conn.commit()
+        symptoms = {'Age': age[0],
+                    'Polyuria': polyuria[0],
+                    'Polydipsia': polydipsia[0],
+                    'sudden weight loss': swl[0],
+                    'weakness': weakness[0],
+                    'Polyphagia': polyphagia[0],
+                    'visual blurring': vb[0],
+                    'Itching': itching[0],
+                    'Irritability': irritab[0],
+                    'delayed healing': dh[0],
+                    'partial paresis': pp[0],
+                    'muscle stiffness': ms[0],
+                    'Alopecia': alopecia[0],
+                    'Obesity': obesity[0]}
+        symptoms = pd.DataFrame([symptoms])
+        symptoms = analysis.scaler.transform(symptoms)
+        pred = analysis.lr.predict(symptoms)
+        pred = str(pred[0])
+        cursor.execute("select concat(fam_patient,' ',left(name_patient,1),'. ',left(otch_patient,1),'.')"
+                       "from patients where ID_patient = '" + patient_id + "';")
+        name = cursor.fetchone()
+        cursor.execute("update patients set prediction = '" + pred + "' where ID_patient = '" + patient_id + "';")
+        if pred[0] == '1':
+            QMessageBox.about(self, 'Результат',
+                              "Вероятный диагноз: Положительный.")
+        elif pred[0] == '0':
+            QMessageBox.about(self, 'Результат',
+                              "Вероятный диагноз: Отрицательный.")
+        msgBox = QMessageBox()
+        msgBox.setIcon(QMessageBox.Information)
+        msgBox.setText("Введенные данные: \n\nФИО пациента: " + str(name[0]) + " \nВозраст: " + str(age[0]) +
+                       "\nПолиурия: " + str(polyuria[0]) + "\nПолидипсия: " + str(polydipsia[0]) +
+                       "\nВнезапная потеря веса: " + str(swl[0]) + "\nCлабость: " + str(weakness[0]) +
+                       "\nПовышенный аппетит: " + str(polyphagia[0]) + "\nПомутнения в глазах: " + str(vb[0]) +
+                       "\nЗуд: " + str(itching[0]) + "\nРаздражительность: " + str(irritab[0]) +
+                       "\nОтсроченное лечение: " + str(dh[0]) + "\nПарез: " + str(pp[0]) +
+                       "\nЖесткость мышц: " + str(ms[0]) + "\nАлопеция: " + str(alopecia[0]) +
+                       "\nОжирение: " + str(obesity[0]) + "\nВероятный диагноз: " + str(pred[0]) + ".")
+
+        msgBox.setWindowTitle('Диагноз')
+        buttonAccept = msgBox.addButton("Положительный", QMessageBox.YesRole)
+        buttonCancel = msgBox.addButton("Отрицательный", QMessageBox.RejectRole)
+        msgBox.exec_()
+
+        if msgBox.clickedButton() == buttonAccept:
+            cursor.execute("update patients set diagnoz = '1' where ID_patient = '" + patient_id + "'")
+        elif msgBox.clickedButton() == buttonCancel:
+            cursor.execute("update patients set diagnoz = '0' where ID_patient = '" + patient_id + "'")
+        conn.commit()
+
+
+app = QApplication(sys.argv)
+welcome = WelcomeScreen()
+widget = QStackedWidget()
+widget.addWidget(welcome)
+widget.setFixedWidth(1200)
+widget.setFixedHeight(800)
+widget.show()
+try:
+    sys.exit(app.exec())
+except:
+    print("Выход")
