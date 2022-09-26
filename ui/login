@@ -1,0 +1,212 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>Dialog</class>
+ <widget class="QDialog" name="Dialog">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1200</width>
+    <height>800</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Dialog</string>
+  </property>
+  <widget class="QWidget" name="widget" native="true">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>1200</width>
+     <height>801</height>
+    </rect>
+   </property>
+   <property name="acceptDrops">
+    <bool>false</bool>
+   </property>
+   <property name="autoFillBackground">
+    <bool>false</bool>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">QWidget#widget{
+background-color:qlineargradient(spread:pad, x1:0.513, y1:0, x2:0.498, y2:1, stop:0 rgba(151, 167, 255, 255), stop:1 rgba(255, 255, 255, 255));}</string>
+   </property>
+   <widget class="QLabel" name="label">
+    <property name="enabled">
+     <bool>true</bool>
+    </property>
+    <property name="geometry">
+     <rect>
+      <x>405</x>
+      <y>130</y>
+      <width>389</width>
+      <height>57</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">color: rgb(3, 0, 86);
+font: 30pt &quot;STZhongsong&quot;;
+
+</string>
+    </property>
+    <property name="text">
+     <string>Вход в систему</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="login">
+    <property name="geometry">
+     <rect>
+      <x>424</x>
+      <y>550</y>
+      <width>351</width>
+      <height>81</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>Book Antiqua</family>
+      <pointsize>22</pointsize>
+      <weight>9</weight>
+      <italic>false</italic>
+      <bold>false</bold>
+     </font>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">border-radius:40px;
+font: 75 22pt &quot;Book Antiqua&quot;;
+background-color: rgb(255, 255, 255) ;
+border: 3px solid #aaa;
+</string>
+    </property>
+    <property name="text">
+     <string>Войти</string>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="usernameline">
+    <property name="geometry">
+     <rect>
+      <x>425</x>
+      <y>300</y>
+      <width>350</width>
+      <height>50</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">background-color: rgba(0,0,0,0);
+font-family: 'Montserrat', sans-serif;
+font-size: 21px;
+padding: 2px;
+border: unset; 
+border-bottom: 3px solid rgb(0, 0, 0);
+outline-color: rgb(3, 55, 175);
+</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignCenter</set>
+    </property>
+    <property name="placeholderText">
+     <string>Введите логин</string>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="passwordline">
+    <property name="geometry">
+     <rect>
+      <x>425</x>
+      <y>400</y>
+      <width>350</width>
+      <height>50</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">background-color: rgba(0,0,0,0);
+font-family: 'Montserrat', sans-serif;
+font-size: 21px;
+padding: 2px;
+border: unset; 
+border-bottom: 3px solid rgb(0, 0, 0);
+outline-color: rgb(3, 55, 175);
+</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignCenter</set>
+    </property>
+    <property name="placeholderText">
+     <string>Введите пароль</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="error">
+    <property name="geometry">
+     <rect>
+      <x>430</x>
+      <y>490</y>
+      <width>341</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">font-family: 'Montserrat', sans-serif;
+font-size: 21px;
+color: red;</string>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="pushButton">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>10</y>
+      <width>93</width>
+      <height>89</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">background-color: rgba(0,0,0,0);</string>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+    <property name="icon">
+     <iconset>
+      <normaloff>backwards (1).png</normaloff>backwards (1).png</iconset>
+    </property>
+    <property name="iconSize">
+     <size>
+      <width>90</width>
+      <height>90</height>
+     </size>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="pushButton_4">
+    <property name="geometry">
+     <rect>
+      <x>1110</x>
+      <y>20</y>
+      <width>63</width>
+      <height>59</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">background-color: rgba(0,0,0,0);</string>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+    <property name="icon">
+     <iconset>
+      <normaloff>free-icon-alternative-medicine-1330602.png</normaloff>free-icon-alternative-medicine-1330602.png</iconset>
+    </property>
+    <property name="iconSize">
+     <size>
+      <width>50</width>
+      <height>50</height>
+     </size>
+    </property>
+   </widget>
+  </widget>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
