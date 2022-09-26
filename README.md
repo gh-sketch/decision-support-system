@@ -1,26 +1,26 @@
 # Система поддержки принятия решений для диагностики диабета
 
 ## Описание данных
-Графики распределения данных
+#### Графики распределения данных
 ![image](https://user-images.githubusercontent.com/81807287/192342171-7280fcc3-c2ba-4f5b-a534-040449e2f731.png)
 
-Корреляционная матрица
+#### Корреляционная матрица
 ![image](https://user-images.githubusercontent.com/81807287/192342649-0402c58e-f05a-4697-97a8-3067289b5c45.png)
 
-Матрицы ошибок
+#### Матрицы ошибок
 ![image](https://user-images.githubusercontent.com/81807287/192342753-220fe7fb-799b-46cb-83ed-57a88d1f4924.png)
 ![image](https://user-images.githubusercontent.com/81807287/192342796-21d5003f-99b4-482d-8bd4-f5e4e98580fe.png)
 ![image](https://user-images.githubusercontent.com/81807287/192342819-09307bb1-ee4c-4931-9ae2-e003c9e8cd9f.png)
 
 ## База данных
 
-Таблица 'users'
+#### Таблица 'users'
 ![image](https://user-images.githubusercontent.com/81807287/192343191-95d173c3-5e9c-446e-a9c2-12d01d003a35.png)
 
-Таблица 'patients'
+#### Таблица 'patients'
 ![image](https://user-images.githubusercontent.com/81807287/192343242-1bee6e53-bac4-4569-97a6-a9d4c5623ae7.png)
 
-ER-диаграмма
+#### ER-диаграмма
 ![image](https://user-images.githubusercontent.com/81807287/192343405-c52a5cd4-e450-4ded-b3f7-8cf5a449b724.png)
 
 ## Интерфейс
@@ -39,7 +39,7 @@ ER-диаграмма
 ### Главная страница
 ![image](https://user-images.githubusercontent.com/81807287/192344045-8e4a0b03-35c6-45b8-8b30-7dc4ca2b1817.png)
 
-Подробная информация о пациентах:
+#### Подробная информация о пациентах:
 ![image](https://user-images.githubusercontent.com/81807287/192344117-affe65ed-0e55-4f6f-930e-8271ecbe0a16.png)
 
 ### Страница добавления новых пациентов
@@ -48,10 +48,10 @@ ER-диаграмма
 ### Страница симптомчекера
 ![image](https://user-images.githubusercontent.com/81807287/192344424-4d251fbe-a1f9-4ccc-8f7b-960060933d4b.png)
 
-Результат прогнозирования:
+#### Результат прогнозирования:
 ![image](https://user-images.githubusercontent.com/81807287/192344443-c4706370-4a14-4120-9431-7a1ac400b754.png)
 
-Проверка результата врачом:
+#### Проверка результата врачом:
 ![image](https://user-images.githubusercontent.com/81807287/192344611-8dd5a3e4-6fad-4408-8dec-212a8afe9352.png)
 
 
